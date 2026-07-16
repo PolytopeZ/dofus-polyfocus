@@ -1,0 +1,23 @@
+<Window x:Class="DofusPolyfocus.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DofusPolyfocus"
+        mc:Ignorable="d"
+        Title="Polyfocus" Height="260" Width="240"
+        Topmost="True" ResizeMode="CanResizeWithGrip"
+        WindowStartupLocation="Manual" Left="20" Top="20">
+    <DockPanel Margin="6">
+        <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" FontSize="11" Foreground="Gray" TextWrapping="Wrap">
+            Ctrl+1..9 select · Ctrl+Tab / Ctrl+Shift+Tab rotate · click to switch
+        </TextBlock>
+        <ListBox x:Name="SlotsList" SelectionChanged="SlotsList_SelectionChanged">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Label}" FontWeight="{Binding FontWeight}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</Window>
