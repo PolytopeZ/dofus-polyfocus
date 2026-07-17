@@ -1,4 +1,5 @@
 using System.Windows;
+using Wpf.Ui.Controls;
 
 namespace DofusPolyfocus;
 
@@ -10,7 +11,7 @@ public sealed class SlotView
     public FontWeight FontWeight { get; init; }
 }
 
-public partial class MainWindow : Window
+public partial class MainWindow : FluentWindow
 {
     private const string ProcessNameFragment = "dofus";
     private AccountRegistry? _registry;
@@ -52,10 +53,10 @@ public partial class MainWindow : Window
 
         if (failed.Count > 0)
         {
-            MessageBox.Show(
+            System.Windows.MessageBox.Show(
                 $"These hotkeys can't be registered :\n{string.Join('\n', failed)}",
                 "Dofus Polyfocus",
-                MessageBoxButton.OK,
+                System.Windows.MessageBoxButton.OK,
                 MessageBoxImage.Warning);
         }
     }
