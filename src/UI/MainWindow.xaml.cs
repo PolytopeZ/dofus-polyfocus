@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Media;
 using Wpf.Ui.Controls;
 
 namespace DofusPolyfocus;
@@ -7,7 +8,10 @@ public sealed class SlotView
 {
     public required int Number { get; init; }
     public required nint Handle { get; init; }
-    public required string Label { get; init; }
+    public required string DisplayName { get; init; }
+    public required string ClassInitials { get; init; }
+    public required Brush ClassBrush { get; init; }
+    public ImageSource? ClassIcon { get; init; }
     public FontWeight FontWeight { get; init; }
 }
 
@@ -66,12 +70,19 @@ public partial class MainWindow : FluentWindow
         if (_registry is null) return;
 
         nint foreground = Native.GetForegroundWindow();
-        SlotsList.ItemsSource = _registry.Slots.Select(s => new SlotView
+        SlotsList.ItemsSource = _registry.Slots.Select(s =>
         {
-            Number = s.Number,
-            Handle = s.Handle,
-            Label = $"{s.Number}. {s.Title}",
-            FontWeight = s.Handle == foreground ? FontWeights.Bold : FontWeights.Normal,
+            var (name, className) = ClassBadge.ParseTitle(s.Title);
+            return new SlotView
+            {
+                Number = s.Number,
+                Handle = s.Handle,
+                DisplayName = $"{s.Number}. {name}",
+                ClassInitials = ClassBadge.Initials(className),
+                ClassBrush = ClassBadge.BrushFor(className),
+                ClassIcon = ClassBadge.TryGetIcon(className),
+                FontWeight = s.Handle == foreground ? FontWeights.Bold : FontWeights.Normal,
+            };
         }).ToList();
     }
 
