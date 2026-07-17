@@ -28,16 +28,36 @@ public partial class MainWindow : Window
         _registry = new AccountRegistry(ProcessNameFragment, TimeSpan.FromMilliseconds(500));
         _registry.Changed += RefreshList;
 
+        var hotkeyConfig = AppConfig.LoadOrCreateDefault();
         _hotkeys = new HotkeyManager(this);
-        for (int i = 1; i <= 9; i++)
+        var failed = new List<string>();
+
+        void TryRegister(string binding, Action onPressed)
         {
-            int slotNumber = i;
-            _hotkeys.Register(Native.MOD_CONTROL, (uint)('0' + i), () => _registry.ActivateSlot(slotNumber));
+            var (modifiers, key) = HotkeyBinding.Parse(binding);
+            if (!_hotkeys.Register(modifiers, key, onPressed))
+            {
+                failed.Add(binding);
+            }
         }
 
-        const uint VK_TAB = 0x09;
-        _hotkeys.Register(Native.MOD_CONTROL, VK_TAB, () => _registry.ActivateRelative(1));
-        _hotkeys.Register(Native.MOD_CONTROL | Native.MOD_SHIFT, VK_TAB, () => _registry.ActivateRelative(-1));
+        for (int i = 0; i < hotkeyConfig.Slots.Length; i++)
+        {
+            int slotNumber = i + 1;
+            TryRegister(hotkeyConfig.Slots[i], () => _registry.ActivateSlot(slotNumber));
+        }
+
+        TryRegister(hotkeyConfig.Next, () => _registry.ActivateRelative(1));
+        TryRegister(hotkeyConfig.Previous, () => _registry.ActivateRelative(-1));
+
+        if (failed.Count > 0)
+        {
+            MessageBox.Show(
+                $"These hotkeys can't be registered :\n{string.Join('\n', failed)}",
+                "Dofus Polyfocus",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
     }
 
     private void RefreshList()

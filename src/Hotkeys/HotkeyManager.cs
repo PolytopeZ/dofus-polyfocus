@@ -17,15 +17,16 @@ public sealed class HotkeyManager : IDisposable
         _source.AddHook(WndProc);
     }
 
-    public void Register(uint modifiers, uint virtualKey, Action onPressed)
+    public bool Register(uint modifiers, uint virtualKey, Action onPressed)
     {
         int id = _nextId++;
         if (Native.RegisterHotKey(_source.Handle, id, modifiers, virtualKey) == 0)
         {
-            throw new InvalidOperationException($"Failed to register hotkey id={id} !!!");
+            return false;
         }
 
         _handlers[id] = onPressed;
+        return true;
     }
 
     private nint WndProc(nint hwnd, int msg, nint wParam, nint lParam, ref bool handled)
