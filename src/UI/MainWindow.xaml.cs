@@ -55,6 +55,9 @@ public partial class MainWindow : FluentWindow
         TryRegister(hotkeyConfig.Next, () => _registry.ActivateRelative(1));
         TryRegister(hotkeyConfig.Previous, () => _registry.ActivateRelative(-1));
 
+        HotkeyHint.Text = $"{hotkeyConfig.Slots[0]}..{hotkeyConfig.Slots[^1]} select · " +
+                           $"{hotkeyConfig.Next} / {hotkeyConfig.Previous} rotate · click to switch";
+
         if (failed.Count > 0)
         {
             System.Windows.MessageBox.Show(

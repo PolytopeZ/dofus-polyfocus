@@ -13,9 +13,7 @@
         ExtendsContentIntoTitleBar="True">
     <DockPanel Margin="6">
         <ui:TitleBar DockPanel.Dock="Top" Title="Polyfocus" Margin="-6,-6,-6,6" />
-        <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" FontSize="11" Foreground="Gray" TextWrapping="Wrap">
-            Ctrl+1..9 select · Ctrl+Tab / Ctrl+Shift+Tab rotate · click to switch
-        </TextBlock>
+        <TextBlock x:Name="HotkeyHint" DockPanel.Dock="Top" Margin="0,0,0,6" FontSize="11" Foreground="Gray" TextWrapping="Wrap" />
         <ListBox x:Name="SlotsList" SelectionChanged="SlotsList_SelectionChanged">
             <ListBox.ItemTemplate>
                 <DataTemplate>
