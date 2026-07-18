@@ -51,4 +51,21 @@ internal static class Native
     public const uint MOD_CONTROL = 0x0002;
     public const uint MOD_SHIFT = 0x0004;
     public const int WM_HOTKEY = 0x0312;
+
+    public delegate void WinEventDelegate(nint hWinEventHook, uint eventType, nint hwnd, int idObject, int idChild, uint eventThread, uint eventTime);
+
+    [DllImport("user32.dll")]
+    public static extern nint SetWinEventHook(uint eventMin, uint eventMax, nint hmodWinEventProc, WinEventDelegate lpfnWinEventProc, uint idProcess, uint idThread, uint dwFlags);
+
+    [DllImport("user32.dll")]
+    public static extern bool UnhookWinEvent(nint hWinEventHook);
+
+    public const uint EVENT_SYSTEM_FOREGROUND = 0x0003;
+    public const uint EVENT_OBJECT_CREATE = 0x8000;
+    public const uint EVENT_OBJECT_DESTROY = 0x8001;
+    public const uint EVENT_OBJECT_NAMECHANGE = 0x800C;
+    public const uint WINEVENT_OUTOFCONTEXT = 0x0000;
+    public const uint WINEVENT_SKIPOWNPROCESS = 0x0002;
+    public const int OBJID_WINDOW = 0;
+    public const int CHILDID_SELF = 0;
 }

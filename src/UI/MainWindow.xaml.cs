@@ -30,7 +30,7 @@ public partial class MainWindow : FluentWindow
     {
         base.OnSourceInitialized(e);
 
-        _registry = new AccountRegistry(ProcessNameFragment, TimeSpan.FromMilliseconds(500));
+        _registry = new AccountRegistry(ProcessNameFragment);
         _registry.Changed += RefreshList;
 
         var hotkeyConfig = AppConfig.LoadOrCreateDefault();

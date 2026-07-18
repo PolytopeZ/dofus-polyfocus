@@ -1,4 +1,4 @@
-using System.Windows.Threading;
+using System.Diagnostics;
 
 namespace DofusPolyfocus;
 
@@ -7,20 +7,55 @@ public sealed record AccountSlot(int Number, nint Handle, string Title);
 public sealed class AccountRegistry : IDisposable
 {
     private readonly string _processNameFragment;
-    private readonly DispatcherTimer _timer;
     private readonly List<(nint Handle, string Title)> _tracked = new();
+    private readonly Native.WinEventDelegate _hookCallback;
+    private readonly nint[] _hooks;
 
     public event Action? Changed;
 
     public IReadOnlyList<AccountSlot> Slots { get; private set; } = Array.Empty<AccountSlot>();
 
-    public AccountRegistry(string processNameFragment, TimeSpan pollInterval)
+    public AccountRegistry(string processNameFragment)
     {
         _processNameFragment = processNameFragment;
-        _timer = new DispatcherTimer { Interval = pollInterval };
-        _timer.Tick += (_, _) => Poll();
-        _timer.Start();
+        _hookCallback = OnWinEvent;
+
+        const uint flags = Native.WINEVENT_OUTOFCONTEXT | Native.WINEVENT_SKIPOWNPROCESS;
+        _hooks =
+        [
+            Native.SetWinEventHook(Native.EVENT_OBJECT_CREATE, Native.EVENT_OBJECT_CREATE, 0, _hookCallback, 0, 0, flags),
+            Native.SetWinEventHook(Native.EVENT_OBJECT_DESTROY, Native.EVENT_OBJECT_DESTROY, 0, _hookCallback, 0, 0, flags),
+            Native.SetWinEventHook(Native.EVENT_OBJECT_NAMECHANGE, Native.EVENT_OBJECT_NAMECHANGE, 0, _hookCallback, 0, 0, flags),
+            Native.SetWinEventHook(Native.EVENT_SYSTEM_FOREGROUND, Native.EVENT_SYSTEM_FOREGROUND, 0, _hookCallback, 0, 0, flags),
+        ];
+
         Poll();
+    }
+
+    private void OnWinEvent(nint hWinEventHook, uint eventType, nint hwnd, int idObject, int idChild, uint eventThread, uint eventTime)
+    {
+        if (idObject != Native.OBJID_WINDOW || idChild != Native.CHILDID_SELF) return;
+
+        bool relevant = eventType == Native.EVENT_SYSTEM_FOREGROUND
+            || (eventType == Native.EVENT_OBJECT_DESTROY ? _tracked.Any(t => t.Handle == hwnd) : IsDofusWindow(hwnd));
+
+        if (relevant)
+        {
+            Poll();
+        }
+    }
+
+    private bool IsDofusWindow(nint hwnd)
+    {
+        Native.GetWindowThreadProcessId(hwnd, out uint pid);
+        try
+        {
+            return Process.GetProcessById((int)pid).ProcessName.Contains(_processNameFragment, StringComparison.OrdinalIgnoreCase);
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
     }
 
     private void Poll()
@@ -78,5 +113,11 @@ public sealed class AccountRegistry : IDisposable
         WindowActivator.Activate(slots[nextIndex].Handle);
     }
 
-    public void Dispose() => _timer.Stop();
+    public void Dispose()
+    {
+        foreach (var hook in _hooks)
+        {
+            Native.UnhookWinEvent(hook);
+        }
+    }
 }
